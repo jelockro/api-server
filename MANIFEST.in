@@ -1,0 +1,2 @@
+include Zeus/schema.sql
+global-exclude *.pyc
