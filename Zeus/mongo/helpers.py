@@ -27,7 +27,7 @@ class Mongo:
 def get_mongo():
     if 'mongo' not in g:
         g.mongo = Mongo()
-    return g.mongo.client
+    return g.mongo
 
 
 def close_mongo(e=None):

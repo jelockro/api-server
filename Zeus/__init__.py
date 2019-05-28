@@ -1,6 +1,7 @@
 import os
 
 from flask import Flask
+from .mongo.helpers import get_mongo
 
 
 def create_app(test_config=None):
@@ -9,8 +10,11 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-        MONGO_HOST='plxlb-mongo02.netsmartlab.lan',
+        MONGO_DATABASE="localhost",
+
     )
+
+    mongo = get_mongo()
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -25,6 +29,10 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    @app.route("/pages/<page_name>")
+    def page(page_name):
+        doc = mongo_client
+
     # a simple page that says hello
     @app.route('/hello')
     def hello():
@@ -32,6 +40,11 @@ def create_app(test_config=None):
 
     from . import db
     db.init_app(app)
+
+    from .mongo.flask_mongoalchemy import MongoAlchemy
+    with app.app_context():
+        mongo = MongoAlchemy()
+        mongo.init_app(app)
 
     # from .mongo import helpers
     # helpers.init_app(app)
