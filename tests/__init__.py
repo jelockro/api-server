@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file.
 
-import Zeus.mongo.flask_mongoalchemy as mongoalchemy
+from Zeus.mongo.flask_mongoalchemy import MongoAlchemy
 from mocker import MockerTestCase
 from flask import Flask
 from werkzeug.exceptions import NotFound
@@ -34,8 +34,9 @@ class BaseAppTestCase(BaseTestCase):
         self.app = Flask(__name__)
         self.app.config['MONGOALCHEMY_DATABASE'] = 'testing'
         self.app.config['TESTING'] = True
-        self.db = mongoalchemy.MongoAlchemy(self.app)
-        self.Todo = _make_todo_document(self.db)
+        with self.app.app_context():
+            self.db = MongoAlchemy(self.app)
+            self.Todo = _make_todo_document(self.db)
 
     def teardown(self):
         for todo in self.Todo.query.all():

@@ -6,7 +6,7 @@
 
 from tests import BaseAppTestCase
 from werkzeug.exceptions import NotFound
-
+from Zeus.mongo.flask_mongoalchemy import Pagination
 
 class FlaskMongoAlchemyQueryTestCase(BaseAppTestCase):
     "Flask-MongoAlchemy BaseQuery class"
@@ -51,7 +51,6 @@ class FlaskMongoAlchemyQueryTestCase(BaseAppTestCase):
         for i in range(4, 20):
             todo = self.Todo(description=u'Try something for the %dth time' % i)
             todo.save()
-        from flask.ext.mongoalchemy import Pagination
         assert isinstance(self.Todo.query.paginate(page=1, per_page=5), Pagination)
 
     def test_should_abort_with_404_when_paginating_an_empty_query(self):

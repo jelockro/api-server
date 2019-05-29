@@ -57,51 +57,61 @@ class MongoAlchemyObjectTestCase(BaseTestCase):
             self.assertIsInstance(Todo.query, Query)
 
     def test_invalid_query_is_none(self):
-        db = MongoAlchemy()
+        with self.app.app_context():
+            db = MongoAlchemy()
 
-        class Query(object):
-            pass
+            class Query(object):
+                pass
 
-        class Todo(db.Document):
-            description = db.StringField()
-            query_class = Query
+            class Todo(db.Document):
+                description = db.StringField()
+                query_class = Query
 
-        assert Todo.query is None
+            assert Todo.query is None
 
     def test_should_include_all_mongo_alchemy_fields_objects(self):
-        db = MongoAlchemy()
-        for key in dir(fields):
-            assert hasattr(db, key), "should have the %s attribute" % key
-        assert hasattr(db, 'DocumentField'), "should have the DocumentField attribute"
+        with self.app.app_context():
+            db = MongoAlchemy()
+            for key in dir(fields):
+                assert hasattr(db, key), "should have the %s attribute" % key
+            assert hasattr(db, 'DocumentField'), "should have the DocumentField attribute"
 
-    def test_should_be_able_to_instantiate_passing_the_app(self):
-        db = MongoAlchemy(self.app)
-        assert db.session is not None
 
-    def test_should_be_able_to_instantiate_without_passing_the_app_and_set_it_later(self):
-        db = MongoAlchemy()
-        assert db.session is None
-        db.init_app(self.app)
-        assert db.session is not None
+    # I don't believe we want to instantiate by passing the app. If this functionality
+    # is required, the flask_mongoaclhemy __init__.py will have to be re-written
+    # and these test uncommented.
+    # I have specifically written the instantiation of this mongodb
+    # to avoid passing the app to it as an object, but instead the
+    # app context
+    # def test_should_be_able_to_instantiate_passing_the_app(self):
+    #     db = MongoAlchemy(self.app)
+    #     assert db.session is not None
+    #
+    # def test_should_be_able_to_instantiate_without_passing_the_app_and_set_it_later(self):
+    #     db = MongoAlchemy()
+    #     assert db.session is None
+    #     db.init_app(self.app)
+    #     assert db.session is not None
 
     def test_should_contain_a_not_none_query(self):
         "Document.query should never be None"
-        db = MongoAlchemy()
-        db.init_app(self.app)
+        with self.app.app_context():
+            db = MongoAlchemy()
+            db.init_app(self.app)
 
-        class Person(db.Document):
-            name = db.StringField()
+            class Person(db.Document):
+                name = db.StringField()
 
-        p = Person()
-        assert p.query is not None
+            p = Person()
+            assert p.query is not None
 
-    def test_should_not_be_able_to_work_without_providing_a_database_name(self):
-        with self.assertRaises(ImproperlyConfiguredError):
+    def test_should_not_be_able_to_work_without_providing_an_application_context(self):
             app = Flask(__name__)
-            MongoAlchemy(app)
+            with self.assertRaises(RuntimeError):
+                MongoAlchemy(app)
 
     def test_loads_without_database_connection_data(self):
-        self.app.config['MONGOALCHEMY_MONGO_DATABASE'] = 'my_database'
+        self.app.config['MONGOALCHEMY_DATABASE'] = 'my_database'
         with self.app.app_context():
             MongoAlchemy(self.app)
             self.assertEqual(self.app.config['MONGOALCHEMY_SERVER'], 'localhost')
@@ -112,7 +122,7 @@ class MongoAlchemyObjectTestCase(BaseTestCase):
 
     def test_should_be_able_to_create_two_decoupled_mongoalchemy_instances(self):
         app = Flask(__name__)
-        app.config['MONGOALCHEMY_MONGO_DATABASE'] = 'my_database'
+        app.config['MONGOALCHEMY_DATABASE'] = 'my_database'
         with app.app_context():
             db1 = MongoAlchemy(app)
             db2 = MongoAlchemy(app)

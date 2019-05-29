@@ -43,7 +43,7 @@ def _get_mongo_uri(key=lambda x:'MONGOALCHEMY_%s' % x):
         auth += '@'
 
         if not current_app.config.get(key('SERVER_AUTH'), True):
-            database = current_app.config.get(key('MONGO_DATABASE'))
+            database = current_app.config.get(key('DATABASE'))
 
     options = ''
 
@@ -113,9 +113,9 @@ class MongoAlchemy(object):
             def key(suffix):
                 return '%s_%s' % (config_prefix, suffix)
 
-            if key('MONGO_DATABASE') not in current_app.config:
+            if key('DATABASE') not in current_app.config:
                 raise ImproperlyConfiguredError("You should provide a mongo database name "
-                                                "(the %s setting)." % key('MONGO_DATABASE'))
+                                                "(the %s setting)." % key('DATABASE'))
             if 'mongo' not in g:
 
                 uri = _get_mongo_uri(key)
@@ -123,7 +123,7 @@ class MongoAlchemy(object):
                 timezone = None
                 if key('TIMEZONE') in current_app.config:
                     timezone = pytz.timezone(current_app.config.get(key('TIMEZONE')))
-                self.session = session.Session.connect(current_app.config.get(key('MONGO_DATABASE')),
+                self.session = session.Session.connect(current_app.config.get(key('DATABASE')),
                                                        safe=current_app.config.get(key('SAFE_SESSION'),
                                                                            False),
                                                        timezone = timezone,
